@@ -1,10 +1,9 @@
+// App.jsx
 import { useState, useRef } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
-import './index.css';
 import Editor from '@monaco-editor/react';
 import { Moon, Sun } from 'lucide-react';
+import './App.css';
+import './index.css';
 
 function App() {
   const [leftWidth, setLeftWidth] = useState(40);
@@ -57,10 +56,9 @@ function App() {
   };
 
   return (
-    <div className={`${dark ? 'dark' : ''}`}>
-      {/* Navbar */}
+    <div className={`${dark ? 'dark' : ''} h-screen w-screen overflow-hidden`}> 
       <div className="h-12 bg-white dark:bg-gray-800 shadow flex items-center justify-between px-4 text-sm dark:text-white">
-        <div className="font-bold">⚡ CodePlayground</div>
+        <div className="font-bold">AGH-CodeEditor</div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setDark(!dark)}
@@ -72,22 +70,19 @@ function App() {
         </div>
       </div>
 
-      {/* Main body */}
       <div className="h-[calc(100vh-3rem)] w-full flex font-sans overflow-hidden dark:bg-gray-900">
-        {/* Left panel */}
         <div
           style={{ width: `${leftWidth}%` }}
           className="bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-200 flex flex-col border-r border-gray-300 dark:border-gray-700 overflow-hidden"
         >
-          {/* Tabs */}
           <div className="flex-shrink-0 text-sm font-medium border-b border-gray-300 dark:border-gray-700">
             {['description', 'submissions', 'solutions'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 capitalize ${activeTab === tab
-                    ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
               >
                 {tab}
@@ -95,7 +90,6 @@ function App() {
             ))}
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto p-5 text-sm">
             {activeTab === 'description' && (
               <>
@@ -112,30 +106,22 @@ function App() {
                 <div className="mt-4">
                   <strong>Example:</strong>
                   <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded mt-2 text-xs">
-                    {`Input: nums = [2,7,11,15], target = 9
-Output: 0,1`}
+                    {`Input: nums = [2,7,11,15], target = 9\nOutput: 0,1`}
                   </pre>
                 </div>
               </>
             )}
-            {activeTab === 'submissions' && (
-              <p>📄 You haven't submitted any solution yet.</p>
-            )}
-            {activeTab === 'solutions' && (
-              <p>🔐 Unlock to view community solutions.</p>
-            )}
+            {activeTab === 'submissions' && <p>📄 You haven't submitted any solution yet.</p>}
+            {activeTab === 'solutions' && <p>🔐 Unlock to view community solutions.</p>}
           </div>
         </div>
 
-        {/* Divider */}
         <div
           onMouseDown={handleMouseDown}
           className="w-1 bg-gray-400 cursor-col-resize"
         ></div>
 
-        {/* Right panel */}
-        <div className="flex-1 flex flex-col dark:bg-gray-900">
-          {/* Editor Input Section */}
+        <div className="flex-1 flex flex-col overflow-hidden dark:bg-gray-900">
           <div className="flex flex-col gap-2 p-3 text-sm bg-gray-50 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
             <div className="flex items-center gap-2">
               <label className="w-32 text-gray-700 dark:text-gray-300">Function Input:</label>
@@ -159,7 +145,6 @@ Output: 0,1`}
             </div>
           </div>
 
-          {/* Editor top bar */}
           <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
             <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
               JavaScript
@@ -177,13 +162,17 @@ Output: 0,1`}
             </div>
           </div>
 
-          {/* Editor */}
-          <div className="flex-1">
+          <div className="flex-1 overflow-hidden">
             <Editor
               height="100%"
               defaultLanguage="javascript"
-              defaultValue={`function twoSum(nums, target) {}`
-              }
+              defaultValue={`function twoSum(nums, target) {
+  for(let i = 0; i < nums.length; i++) {
+    for(let j = i + 1; j < nums.length; j++) {
+      if(nums[i] + nums[j] === target) return [i, j];
+    }
+  }
+}`}
               theme={dark ? 'vs-dark' : 'vs-light'}
               options={{
                 fontSize: 14,
@@ -196,7 +185,6 @@ Output: 0,1`}
             />
           </div>
 
-          {/* Console panel */}
           <div className="bg-gray-100 dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-300 p-3 border-t border-gray-300 dark:border-gray-700 h-28 overflow-y-auto whitespace-pre-wrap">
             {consoleOutput || 'Console output will appear here...'}
           </div>
