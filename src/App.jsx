@@ -1,9 +1,161 @@
-// App.jsx
+// App.jsx (Styled Components Version)
 import { useState, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { Moon, Sun } from 'lucide-react';
-import './App.css';
-import './index.css';
+import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
+
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: ${({ theme }) => theme.bg};
+    color: ${({ theme }) => theme.text};
+  }
+`;
+
+const themes = {
+  light: {
+    bg: '#ffffff',
+    text: '#000000',
+    panel: '#f9f9f9',
+    border: '#ccc',
+  },
+  dark: {
+    bg: '#111827',
+    text: '#ffffff',
+    panel: '#1f2937',
+    border: '#374151',
+  },
+};
+
+const Container = styled.div`
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+`;
+
+const Navbar = styled.div`
+  height: 3rem;
+  background: ${({ theme }) => theme.bg};
+  color: ${({ theme }) => theme.text};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+`;
+
+const Main = styled.div`
+  display: flex;
+  height: calc(100vh - 3rem);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto; /* Adjust height for stacked layout */
+  }
+`;
+
+const Panel = styled.div`
+  width: ${({ width }) => width}%;
+  background: ${({ theme }) => theme.bg};
+  color: ${({ theme }) => theme.text};
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid ${({ theme }) => theme.border};
+
+  @media (max-width: 768px) {
+    width: 100%;
+    border-right: none; /* Remove border for stacked layout */
+    border-bottom: 1px solid ${({ theme }) => theme.border}; /* Add bottom border */
+  }
+`;
+
+const Tabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+`;
+
+const Tab = styled.button`
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: ${({ active }) => (active ? '2px solid #3b82f6' : 'none')};
+  color: ${({ active, theme }) => (active ? '#3b82f6' : theme.text)};
+`;
+
+const Content = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  font-size: 0.9rem;
+`;
+
+const Resizer = styled.div`
+  width: 1px;
+  background: gray;
+  cursor: col-resize;
+
+  @media (max-width: 768px) {
+    display: none; /* Hide resizer on small screens */
+  }
+`;
+
+const EditorPanel = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: ${({ theme }) => theme.panel}; /* ✅ ADD THIS LINE */
+`;
+
+
+const InputRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: ${({ theme }) => theme.panel};
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+`;
+
+const Label = styled.label`
+  width: 8rem;
+`;
+
+const Input = styled.input`
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+`;
+
+const Toolbar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: ${({ theme }) => theme.panel}; /* ✅ CHANGED from theme.bg to theme.panel */
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+`;
+
+
+const Button = styled.button`
+  padding: 0.25rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  color: white;
+  background-color: ${({ color }) => color || '#3b82f6'};
+  cursor: pointer;
+`;
+
+const Output = styled.div`
+  background: ${({ theme }) => theme.panel};
+  color: ${({ theme }) => theme.text};
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  height: 7rem;
+  overflow-y: auto;
+  border-top: 1px solid ${({ theme }) => theme.border};
+  white-space: pre-wrap;
+`;
 
 function App() {
   const [leftWidth, setLeftWidth] = useState(40);
@@ -56,123 +208,64 @@ function App() {
   };
 
   return (
-    <div className={`${dark ? 'dark' : ''} h-screen w-screen overflow-hidden`}> 
-      <div className="h-12 bg-white dark:bg-gray-800 shadow flex items-center justify-between px-4 text-sm dark:text-white">
-        <div className="font-bold">AGH-CodeEditor</div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setDark(!dark)}
-            className="hover:scale-105 transition"
-            title="Toggle Theme"
-          >
+    <ThemeProvider theme={dark ? themes.dark : themes.light}>
+      <GlobalStyle />
+      <Container>
+        <Navbar>
+          <div>AGH-CodeEditor</div>
+          <button onClick={() => setDark(!dark)} title="Toggle Theme">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-        </div>
-      </div>
+        </Navbar>
 
-      <div className="h-[calc(100vh-3rem)] w-full flex font-sans overflow-hidden dark:bg-gray-900">
-        <div
-          style={{ width: `${leftWidth}%` }}
-          className="bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-200 flex flex-col border-r border-gray-300 dark:border-gray-700 overflow-hidden"
-        >
-          <div className="flex-shrink-0 text-sm font-medium border-b border-gray-300 dark:border-gray-700">
-            {['description', 'submissions', 'solutions'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 capitalize ${activeTab === tab
-                  ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        <Main>
+          <Panel width={leftWidth}>
+            <Tabs>
+              {['description', 'submissions', 'solutions'].map((tab) => (
+                <Tab key={tab} active={activeTab === tab} onClick={() => setActiveTab(tab)}>
+                  {tab}
+                </Tab>
+              ))}
+            </Tabs>
 
-          <div className="flex-1 overflow-y-auto p-5 text-sm">
-            {activeTab === 'description' && (
-              <>
-                <h1 className="text-xl font-semibold mb-2">1. Two Sum</h1>
-                <p>
-                  Given an array of integers <code>nums</code> and an integer{' '}
-                  <code>target</code>, return indices of the two numbers such that they
-                  add up to <code>target</code>.
-                </p>
-                <p className="mt-2">
-                  You may assume that each input would have exactly one solution, and you
-                  may not use the same element twice.
-                </p>
-                <div className="mt-4">
-                  <strong>Example:</strong>
-                  <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded mt-2 text-xs">
-                    {`Input: nums = [2,7,11,15], target = 9\nOutput: 0,1`}
-                  </pre>
-                </div>
-              </>
-            )}
-            {activeTab === 'submissions' && <p>📄 You haven't submitted any solution yet.</p>}
-            {activeTab === 'solutions' && <p>🔐 Unlock to view community solutions.</p>}
-          </div>
-        </div>
+            <Content>
+              {activeTab === 'description' && (
+                <>
+                  <h1>1. Two Sum</h1>
+                  <p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.</p>
+                  <p>You may assume that each input would have exactly one solution, and you may not use the same element twice.</p>
+                  <pre>Input: nums = [2,7,11,15], target = 9\nOutput: 0,1</pre>
+                </>
+              )}
+              {activeTab === 'submissions' && <p>📄 You haven't submitted any solution yet.</p>}
+              {activeTab === 'solutions' && <p>🔐 Unlock to view community solutions.</p>}
+            </Content>
+          </Panel>
 
-        <div
-          onMouseDown={handleMouseDown}
-          className="w-1 bg-gray-400 cursor-col-resize"
-        ></div>
+          <Resizer onMouseDown={handleMouseDown} />
 
-        <div className="flex-1 flex flex-col overflow-hidden dark:bg-gray-900">
-          <div className="flex flex-col gap-2 p-3 text-sm bg-gray-50 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
-            <div className="flex items-center gap-2">
-              <label className="w-32 text-gray-700 dark:text-gray-300">Function Input:</label>
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-black"
-                placeholder="[2,7,11,15], 9"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="w-32 text-gray-700 dark:text-gray-300">Expected Output:</label>
-              <input
-                type="text"
-                value={expectedOutput}
-                onChange={(e) => setExpectedOutput(e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-black"
-                placeholder="0,1"
-              />
-            </div>
-          </div>
+          <EditorPanel>
+            <InputRow>
+              <Label>Function Input:</Label>
+              <Input value={userInput} onChange={(e) => setUserInput(e.target.value)} />
+            </InputRow>
+            <InputRow>
+              <Label>Expected Output:</Label>
+              <Input value={expectedOutput} onChange={(e) => setExpectedOutput(e.target.value)} />
+            </InputRow>
 
-          <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              JavaScript
-            </div>
-            <div className="space-x-2">
-              <button
-                onClick={handleRunCode}
-                className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded"
-              >
-                Run
-              </button>
-              <button className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-1 rounded">
-                Submit
-              </button>
-            </div>
-          </div>
+            <Toolbar>
+              <div>JavaScript</div>
+              <div>
+                <Button onClick={handleRunCode}>Run</Button>
+                <Button color="#10b981">Submit</Button>
+              </div>
+            </Toolbar>
 
-          <div className="flex-1 overflow-hidden">
             <Editor
               height="100%"
               defaultLanguage="javascript"
-              defaultValue={`function twoSum(nums, target) {
-  for(let i = 0; i < nums.length; i++) {
-    for(let j = i + 1; j < nums.length; j++) {
-      if(nums[i] + nums[j] === target) return [i, j];
-    }
-  }
-}`}
+              defaultValue={`function twoSum(nums, target) {\n  for(let i = 0; i < nums.length; i++) {\n    for(let j = i + 1; j < nums.length; j++) {\n      if(nums[i] + nums[j] === target) return [i, j];\n    }\n  }\n}`}
               theme={dark ? 'vs-dark' : 'vs-light'}
               options={{
                 fontSize: 14,
@@ -183,14 +276,12 @@ function App() {
               }}
               onMount={(editor) => (editorRef.current = editor)}
             />
-          </div>
 
-          <div className="bg-gray-100 dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-300 p-3 border-t border-gray-300 dark:border-gray-700 h-28 overflow-y-auto whitespace-pre-wrap">
-            {consoleOutput || 'Console output will appear here...'}
-          </div>
-        </div>
-      </div>
-    </div>
+            <Output>{consoleOutput || 'Console output will appear here...'}</Output>
+          </EditorPanel>
+        </Main>
+      </Container>
+    </ThemeProvider>
   );
 }
 
